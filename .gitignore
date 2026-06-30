@@ -1,0 +1,41 @@
+# ==========================================
+# 1. PYTHON CACHE (Sampah Kompilasi)
+# ==========================================
+# File-file ini di-generate otomatis oleh Python, tidak perlu di-upload.
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ==========================================
+# 2. VIRTUAL ENVIRONMENT (Beban Berat)
+# ==========================================
+# Ukurannya bisa ratusan MB. Biarkan orang lain meng-install sendiri 
+# lewat requirements.txt.
+env_game/
+venv/
+env/
+
+# ==========================================
+# 3. KUNCI RAHASIA (SANGAT KRUSIAL!) 🚨
+# ==========================================
+# Memblokir file .env agar API Key Gemini dan konfigurasi rahasiamu 
+# tidak bocor ke publik di GitHub.
+.env
+*.env
+
+# ==========================================
+# 4. FILE SISTEM & IDE (Kerapian)
+# ==========================================
+# Mencegah file konfigurasi lokal dari VS Code atau Windows/Mac ikut terbawa.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# 5. CATATAN UNTUK DATABASE & MACHINE LEARNING
+# ==========================================
+# Normalnya, developer akan memblokir file database (*.db) dan data (*.csv).
+# TAPI, sebagai keputusan strategis agar dosen/reviewer-mu bisa langsung 
+# mencoba aplikasi tanpa repot melakukan setup ulang, kita SENGAJA 
+# tidak memblokir game_data.db dan file model (.pkl).

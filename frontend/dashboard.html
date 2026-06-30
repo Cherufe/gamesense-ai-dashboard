@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Analytics Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { darkbg: '#0f172a', sidebar: '#1e293b', cardbg: '#1e293b', primary: '#3b82f6', success: '#10b981', danger: '#ef4444', warning: '#f59e0b' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-slate-200 font-sans flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-sidebar border-r border-slate-700 flex flex-col transition-all duration-300">
+        <div class="h-16 flex items-center px-6 border-b border-slate-700">
+            <span class="text-xl font-bold text-white tracking-wider">🎮 Game<span class="text-primary">Sense</span></span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button onclick="switchTab('overview')" id="btn-overview" class="w-full flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg font-medium transition-colors">
+                📊 Global Overview
+            </button>
+            <button onclick="switchTab('profiling')" id="btn-profiling" class="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg font-medium transition-colors">
+                🤖 AI Profiling
+            </button>
+            <div class="pt-6 mt-6 border-t border-slate-700">
+                <p class="text-xs text-slate-500 uppercase font-bold mb-2">Sistem</p>
+                <div class="flex items-center gap-2 text-sm text-slate-400">
+                    <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div> API Server Online
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-400 mt-2">
+                    <div class="w-2 h-2 rounded-full bg-primary"></div> Model: XGBoost v3
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        
+        <header class="h-16 bg-sidebar/50 border-b border-slate-700 flex items-center justify-between px-8">
+            <h1 id="pageTitle" class="text-xl font-semibold text-white">Global Dashboard</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-slate-400">Admin User</span>
+                <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white">A</div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            
+            <div id="view-overview" class="space-y-6 block">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-cardbg p-5 rounded-xl border border-slate-700 shadow-sm">
+                        <h3 class="text-slate-400 text-sm font-medium">Total Pemain Aktif</h3>
+                        <p id="totalPlayersText" class="text-3xl font-bold text-white mt-2">-</p>
+                    </div>
+                    <div class="bg-cardbg p-5 rounded-xl border border-slate-700 shadow-sm">
+                        <h3 class="text-slate-400 text-sm font-medium">Akurasi AI Model</h3>
+                        <p class="text-3xl font-bold text-success mt-2">95.2%</p>
+                    </div>
+                    <div class="bg-cardbg p-5 rounded-xl border border-slate-700 shadow-sm">
+                        <h3 class="text-slate-400 text-sm font-medium">Database Status</h3>
+                        <p class="text-3xl font-bold text-primary mt-2">Terhubung</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-cardbg p-6 rounded-xl border border-slate-700 shadow-sm flex flex-col items-center justify-center">
+                        <h3 class="text-white font-semibold mb-4 w-full text-left">Distribusi Engagement Level</h3>
+                        <div class="w-64 h-64 relative">
+                            <canvas id="engagementPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-cardbg to-slate-800 p-6 rounded-xl border border-primary/20 shadow-sm">
+                        <h3 class="text-white font-semibold mb-2">Insight Global AI</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                            Sistem mendeteksi bahwa rata-rata pemain memiliki tingkat retensi yang stabil. Gunakan fitur <strong>AI Profiling</strong> di menu samping untuk membedah perilaku pemain spesifik dan mendapatkan rekomendasi intervensi taktis dari Gemini AI.
+                        </p>
+                        <button onclick="switchTab('profiling')" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors">Buka AI Profiling →</button>
+                    </div>
+                </div>
+
+                <div class="bg-cardbg rounded-xl border border-slate-700 shadow-sm overflow-hidden mt-6">
+                    <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                        <h3 class="text-white font-bold flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-danger animate-pulse"></span>
+                            Live AI Radar (Real-Time Monitoring)
+                        </h3>
+                        <span class="text-xs text-slate-400">Memperbarui otomatis tiap 5 detik</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-800/80 text-slate-400 text-xs uppercase font-semibold">
+                                <tr>
+                                    <th class="px-6 py-4">Level & Usia</th>
+                                    <th class="px-6 py-4">Waktu Main (Jam)</th>
+                                    <th class="px-6 py-4">Prediksi AI</th>
+                                    <th class="px-6 py-4">Keyakinan</th>
+                                    <th class="px-6 py-4">Akurasi AI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liveRadarBody" class="divide-y divide-slate-700/50">
+                                <tr><td colspan="5" class="px-6 py-4 text-center text-slate-500">Menghubungkan ke radar...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-profiling" class="space-y-6 hidden">
+                <div class="bg-cardbg p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div>
+                        <h2 class="text-white font-semibold">Cari Data Pemain</h2>
+                        <p class="text-sm text-slate-400">Masukkan PlayerID untuk membedah psikologi permainannya.</p>
+                    </div>
+                    <div class="flex w-full md:w-auto">
+                        <input type="number" id="playerIdInput" placeholder="Ex: 5" class="bg-slate-900 text-white px-4 py-2 rounded-l-lg border border-slate-600 focus:outline-none focus:border-primary w-full md:w-48">
+                        <button onclick="fetchPlayerData()" class="bg-primary hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-r-lg transition-colors">Analisis</button>
+                    </div>
+                </div>
+
+                <div id="loadingIndicator" class="text-center hidden py-8"><p class="text-primary font-semibold animate-pulse">🤖 AI sedang meracik analisis...</p></div>
+                <div id="errorMessage" class="bg-danger/20 border border-danger text-danger px-4 py-3 rounded-lg hidden"></div>
+
+                <div id="dashboardContent" class="grid grid-cols-1 gap-6 hidden">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        
+                        <div class="lg:col-span-1 bg-cardbg rounded-xl border border-slate-700 p-5 shadow-lg flex flex-col justify-center">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 mb-4">Statistik Pemain</h2>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center"><span class="text-slate-400 text-sm">Player ID</span><span id="txtPlayerId" class="font-mono text-white font-bold">-</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400 text-sm">Level</span><span id="txtLevel" class="font-bold text-white">-</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400 text-sm">Prediksi AI</span><span id="txtPrediction" class="font-bold px-3 py-1 rounded-full text-xs text-white shadow-inner">-</span></div>
+                                <div class="flex justify-between items-center"><span class="text-slate-400 text-sm">Keyakinan</span><span id="txtConfidence" class="font-bold text-primary">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-1 bg-cardbg rounded-xl border border-slate-700 p-5 shadow-lg flex flex-col">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 mb-2">Player DNA</h2>
+                            <div class="w-full flex-1 relative min-h-[180px]"><canvas id="radarChart"></canvas></div>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-cardbg rounded-xl border border-slate-700 p-5 shadow-lg flex flex-col">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-700 pb-2 mb-2">Analisis Faktor AI (SHAP)</h2>
+                            <div class="w-full flex-1 relative min-h-[180px]"><canvas id="shapChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-primary/30 p-6 relative overflow-hidden shadow-[0_4px_20px_rgba(59,130,246,0.05)] group transition-all hover:border-primary/50">
+                            <div class="absolute -right-10 -top-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500"></div>
+                            <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">🧠 Diagnosis Psikologi</h2>
+                            <p id="txtAiDiagnosis" class="text-sm text-slate-300 leading-relaxed relative z-10">Menunggu data...</p>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-success/30 p-6 relative overflow-hidden shadow-[0_4px_20px_rgba(16,185,129,0.05)] group transition-all hover:border-success/50 flex flex-col justify-between">
+                            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-success/10 rounded-full blur-3xl group-hover:bg-success/20 transition-all duration-500"></div>
+                            <div class="relative z-10">
+                                <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">⚡ Rekomendasi Taktis</h2>
+                                <p id="txtAiAction" class="text-sm text-slate-300 leading-relaxed mb-6">Menunggu data...</p>
+                            </div>
+                            
+                            <div class="flex gap-3 mt-4 relative z-10">
+                                <button onclick="triggerDummyAction('✅ Reward Milestone berhasil dikirim ke Inbox pemain!')" class="flex-1 bg-success/90 hover:bg-success text-white font-medium py-2 px-4 rounded-lg transition-all transform hover:-translate-y-1 shadow-lg shadow-success/20 text-sm">
+                                    🎁 Beri Reward
+                                </button>
+                                <button onclick="triggerDummyAction('📲 Push Notification peringatan churn sedang dikirim...')" class="flex-1 border border-primary/50 text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition-all transform hover:-translate-y-1 shadow-lg shadow-primary/20 text-sm">
+                                    Kirim Notif
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let shapChartInstance = null;
+        let pieChartInstance = null;
+        let radarChartInstance = null; // Tambahan untuk Radar Chart
+
+        // TAB NAVIGATION LOGIC
+        function switchTab(tabName) {
+            document.getElementById('btn-overview').className = tabName === 'overview' 
+                ? "w-full flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg font-medium transition-colors" 
+                : "w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg font-medium transition-colors";
+            
+            document.getElementById('btn-profiling').className = tabName === 'profiling' 
+                ? "w-full flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg font-medium transition-colors" 
+                : "w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg font-medium transition-colors";
+
+            document.getElementById('view-overview').classList.toggle('hidden', tabName !== 'overview');
+            document.getElementById('view-profiling').classList.toggle('hidden', tabName !== 'profiling');
+            document.getElementById('pageTitle').innerText = tabName === 'overview' ? 'Global Dashboard' : 'Player Profiling AI';
+        }
+
+        // LOAD GLOBAL DATA ON START
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                // Panggil endpoint Global
+                const response = await fetch("http://127.0.0.1:8000/api/stats/global");
+                const result = await response.json();
+                if(result.status === "success") {
+                    document.getElementById("totalPlayersText").innerText = result.data.total_players.toLocaleString('id-ID');
+                    const dist = result.data.engagement_distribution;
+                    renderPieChart(dist["High"] || 0, dist["Medium"] || 0, dist["Low"] || 0);
+                }
+                
+                // Panggil Live Radar & set interval tiap 5 detik
+                fetchLiveRadar();
+                setInterval(fetchLiveRadar, 5000);
+
+            } catch (error) { console.error("API Error:", error); }
+        });
+
+        // FUNGSI FETCH UNTUK LIVE RADAR
+        async function fetchLiveRadar() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/live-radar");
+                const result = await response.json();
+                
+                if (result.status === "success" && result.data && result.data.length > 0) {
+                    const tbody = document.getElementById("liveRadarBody");
+                    tbody.innerHTML = ""; // Bersihkan pesan loading
+                    
+                    result.data.forEach(player => {
+                        const pred = player.Predicted_Engagement || "Unknown";
+                        const isCorrect = player.Prediction_Correct == 1; 
+                        
+                        let confValue = parseFloat(player.Confidence_Score);
+                        if (confValue < 1) confValue = confValue * 100; 
+                        const confidence = isNaN(confValue) ? "N/A" : confValue.toFixed(1) + "%";
+
+                        const playTime = parseFloat(player.PlayTimeHours);
+                        const displayTime = isNaN(playTime) ? "0" : playTime.toFixed(1);
+                        
+                        const badgeClass = pred === "High" ? "bg-success/20 text-success border-success/50" : 
+                                           pred === "Medium" ? "bg-warning/20 text-warning border-warning/50" : 
+                                           pred === "Low" ? "bg-danger/20 text-danger border-danger/50" :
+                                           "bg-slate-700 text-slate-300 border-slate-600";
+                        
+                        const correctIcon = isCorrect ? "✅ Tepat" : "❌ Meleset";
+                        
+                        const row = `
+                            <tr class="hover:bg-slate-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-white">Lvl ${player.PlayerLevel || '-'} (Usia ${player.Age || '-'})</td>
+                                <td class="px-6 py-4">${displayTime} Jam</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded text-xs border border-solid ${badgeClass} font-bold">${pred}</span>
+                                </td>
+                                <td class="px-6 py-4 font-mono text-primary">${confidence}</td>
+                                <td class="px-6 py-4 text-xs font-semibold">${correctIcon} <span class="text-slate-500 font-normal hidden md:inline">(Asli: ${player.Actual_Engagement || '-'})</span></td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                }
+            } catch (error) {
+                console.error("Gagal memuat Live Radar:", error);
+            }
+        }
+
+        // RENDER PIE CHART
+        function renderPieChart(high, medium, low) {
+            const ctx = document.getElementById('engagementPieChart').getContext('2d');
+            if(pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [high, medium, low],
+                        backgroundColor: ['rgba(16, 185, 129, 0.9)', 'rgba(245, 158, 11, 0.9)', 'rgba(239, 68, 68, 0.9)'],
+                        borderColor: '#1e293b', borderWidth: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#e2e8f0'} } } }
+            });
+        }
+
+        // FETCH PROFILING DATA (DIUPDATE UNTUK KARTU ORGANIK & RADAR)
+        async function fetchPlayerData() {
+            const playerId = document.getElementById('playerIdInput').value;
+            if (!playerId) return;
+
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.add('hidden');
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/player/${playerId}`);
+                const data = await response.json();
+
+                if (data.status === "error") throw new Error(data.pesan);
+
+                // Update Vitals
+                document.getElementById('txtPlayerId').innerText = data.raw_data.PlayerID || playerId;
+                document.getElementById('txtLevel').innerText = data.raw_data.PlayerLevel;
+                document.getElementById('txtConfidence').innerText = data.ai_analysis.confidence + "%";
+                
+                const pb = document.getElementById('txtPrediction');
+                pb.innerText = data.ai_analysis.prediction;
+                pb.className = "font-bold px-3 py-1 rounded-full text-xs text-white shadow-inner " + 
+                    (data.ai_analysis.prediction === "High" ? "bg-success" : data.ai_analysis.prediction === "Medium" ? "bg-warning" : "bg-danger");
+
+                // ==========================================
+                // PECAH TEKS GEMINI (Diagnosis & Action)
+                // ==========================================
+                let fullText = data.ai_recommendation;
+                let diagnosisText = fullText;
+                let actionText = "Tidak ada rekomendasi khusus yang diberikan.";
+
+                // Deteksi kata "Rekomendasi" untuk membelah string
+                if (fullText.includes("Rekomendasi")) {
+                    let splitIndex = fullText.lastIndexOf("**Rekomendasi");
+                    if(splitIndex === -1) splitIndex = fullText.lastIndexOf("Rekomendasi");
+                    
+                    if (splitIndex !== -1) {
+                        diagnosisText = fullText.substring(0, splitIndex);
+                        actionText = fullText.substring(splitIndex);
+                    }
+                }
+
+                // Parser Markdown ke HTML
+                const parseMarkdown = (text) => {
+                    return text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
+                               .replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>')
+                               .replace(/\n/g, '<br>');
+                };
+
+                // Masukkan ke kartu masing-masing
+                document.getElementById('txtAiDiagnosis').innerHTML = parseMarkdown(diagnosisText);
+                document.getElementById('txtAiAction').innerHTML = parseMarkdown(actionText);
+
+                // Render Chart SHAP & RADAR
+                renderShapChart(data.ai_analysis.top_shap_features);
+                renderRadarChart(data.raw_data);
+                
+                document.getElementById('dashboardContent').classList.remove('hidden');
+
+            } catch (error) {
+                const errDiv = document.getElementById('errorMessage');
+                errDiv.innerText = "❌ " + error.message;
+                errDiv.classList.remove('hidden');
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // RENDER SHAP CHART
+        function renderShapChart(shapFeatures) {
+            const ctx = document.getElementById('shapChart').getContext('2d');
+            if (shapChartInstance) shapChartInstance.destroy();
+
+            shapChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: shapFeatures.map(f => f.feature),
+                    datasets: [{
+                        label: 'Impact',
+                        data: shapFeatures.map(f => f.impact),
+                        backgroundColor: shapFeatures.map(f => f.type === 'positive' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }, y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: {weight: 'bold'} } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // =======================================================
+        // FUNGSI BARU: RENDER RADAR CHART (PLAYER DNA)
+        // =======================================================
+        function renderRadarChart(rawData) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            // Normalisasi kasar ke skala 0-100 untuk visualisasi Radar
+            const dnaData = [
+                Math.min((rawData.PlayTimeHours || 0) * 2, 100),         // Dedikasi
+                Math.min((rawData.SessionsPerWeek || 0) * 5, 100),       // Keaktifan
+                Math.min((rawData.AchievementsUnlocked || 0) * 2, 100),  // Eksplorasi
+                rawData.PlayerLevel || 0,                                // Pengalaman
+                Math.min((rawData.EngagementDepth || 0) * 100, 100)      // Kedalaman
+            ];
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Dedikasi', 'Keaktifan', 'Eksplorasi', 'Pengalaman', 'Kedalaman'],
+                    datasets: [{
+                        label: 'DNA Pemain',
+                        data: dnaData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10b981',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#94a3b8', font: { size: 10 } },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // =======================================================
+        // FUNGSI BARU: TOMBOL DUMMY AKSI
+        // =======================================================
+        function triggerDummyAction(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>
