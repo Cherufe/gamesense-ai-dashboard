@@ -23,6 +23,9 @@ env/
 .env
 *.env
 
+# Streamlit secrets lokal juga wajib diblokir agar API key tidak bocor.
+.streamlit/secrets.toml
+
 # ==========================================
 # 4. FILE SISTEM & IDE (Kerapian)
 # ==========================================
@@ -39,3 +42,8 @@ Thumbs.db
 # TAPI, sebagai keputusan strategis agar dosen/reviewer-mu bisa langsung 
 # mencoba aplikasi tanpa repot melakukan setup ulang, kita SENGAJA 
 # tidak memblokir game_data.db dan file model (.pkl).
+
+# Jangan tambahkan rule ini jika ingin deploy Streamlit langsung jalan:
+# *.db
+# *.pkl
+# models/

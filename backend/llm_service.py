@@ -3,24 +3,45 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# 1. Muat API Key dari file .env
+# 1. Muat API Key dari file .env untuk lokal
 load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
+
+
+def get_gemini_api_key():
+    """
+    Mengambil API key Gemini dari beberapa sumber:
+    1. Environment variable / file .env untuk lokal
+    2. Streamlit Secrets untuk deployment Streamlit Cloud
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+
+    if api_key:
+        return api_key
+
+    try:
+        import streamlit as st
+        return st.secrets.get("GEMINI_API_KEY")
+    except Exception:
+        return None
+
+
+API_KEY = get_gemini_api_key()
 
 if not API_KEY:
-    print("⚠️ Peringatan: GEMINI_API_KEY tidak ditemukan di file .env!")
+    print("⚠️ Peringatan: GEMINI_API_KEY tidak ditemukan di .env atau Streamlit Secrets!")
 
-# Konfigurasi Gemini
-genai.configure(api_key=API_KEY)
+# Konfigurasi Gemini hanya jika API key tersedia
+if API_KEY:
+    genai.configure(api_key=API_KEY)
 
-# Kita gunakan model gemini-1.5-flash karena sangat cepat dan murah untuk teks
-gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+# Kita gunakan model Gemini Flash karena cepat untuk teks rekomendasi
+gemini_model = genai.GenerativeModel("gemini-2.5-flash") if API_KEY else None
 
 def generate_actionable_insight(prediction: str, confidence: float, shap_features: list) -> str:
     """
     Fungsi untuk mengubah data matematis menjadi rekomendasi bisnis yang mudah dibaca.
     """
-    if not API_KEY:
+    if not API_KEY or gemini_model is None:
         return "Rekomendasi AI tidak tersedia karena API Key belum dikonfigurasi."
 
     # 2. Merakit Prompt (Instruksi untuk AI)
