@@ -7,7 +7,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 from backend.ml_service import predict_and_explain
@@ -517,17 +516,6 @@ with st.sidebar:
 # PAGE: GLOBAL OVERVIEW
 # ======================================================
 if selected_menu == "📊 Global Overview":
-    components.html(
-        """
-        <script>
-            setTimeout(function() {
-                window.parent.location.reload();
-            }, 5000);
-        </script>
-        """,
-        height=0,
-    )
-
     st.title("Global Dashboard")
 
     try:
@@ -565,8 +553,16 @@ if selected_menu == "📊 Global Overview":
                 )
 
         with st.container(border=True):
-            st.subheader("🔴 Live AI Radar (Auto-Refresh Monitoring)")
-            st.caption("Dashboard melakukan polling otomatis setiap 5 detik tanpa perlu refresh manual browser.")
+            col_radar_title, col_radar_action = st.columns([3, 1])
+
+            with col_radar_title:
+                st.subheader("🔴 Live AI Radar (Manual Monitoring)")
+                st.caption("Klik tombol refresh untuk mengambil sampel data monitoring terbaru.")
+
+            with col_radar_action:
+                if st.button("🔄 Refresh Radar", use_container_width=True):
+                    get_live_radar.clear()
+                    st.rerun()
 
             live_df = get_live_radar()
 

@@ -18,8 +18,8 @@ Versi terbaru project ini sudah mendukung **Streamlit Dashboard** sehingga aplik
 1. **📊 Global Overview Dashboard**
    Pemantauan metrik utama (KPI) dengan visualisasi *Doughnut Chart* dinamis untuk melihat distribusi *engagement* pemain (High, Medium, Low) di seluruh ekosistem game.
 
-2. **📡 Live AI Radar (Auto-Refresh Monitoring)**
-   Sistem radar yang memperbarui tampilan data secara otomatis setiap 5 detik. Menampilkan prediksi status *engagement* pemain beserta *Confidence Score* (Tingkat Keyakinan AI) dan status akurasinya.
+2. **📡 Live AI Radar (Manual Monitoring)**
+   Sistem radar dengan tombol refresh manual untuk mengambil sampel data monitoring terbaru. Menampilkan prediksi status *engagement* pemain beserta *Confidence Score* (Tingkat Keyakinan AI) dan status akurasinya.
 
 3. **🤖 Player Profiling & Explainable AI (XAI)**
    - **Player DNA (Radar Chart):** Membedah gaya bermain (Dedikasi, Keaktifan, Eksplorasi, Pengalaman, Kedalaman).
@@ -147,5 +147,6 @@ Klik **Deploy**. Streamlit akan otomatis membaca `requirements.txt`, menginstall
 ---
 
 Developed with ☕ and Code by **Bryanka Jordaneo Vanky Heizer**
+
 
 
